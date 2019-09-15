@@ -1,0 +1,149 @@
+import pandas as pd
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Read the data
+excel1 = pd.ExcelFile("Bulk_Billing_By_Year_VIC.xlsx")
+excel2 = pd.ExcelFile("Bulk_Billing_Rate_Outer_Regional.xlsx")
+excel3 = pd.ExcelFile("Bulk_Billing_Rate_Remote.xlsx")
+excel4 = pd.ExcelFile("Bulk_Billing_Rate_Very_Remote.xlsx")
+
+print(excel1.sheet_names)
+print(excel2.sheet_names)
+print(excel3.sheet_names)
+print(excel4.sheet_names)
+
+df1 = pd.read_excel("Bulk_Billing_By_Year_VIC.xlsx", sheet_name = excel1.sheet_names[0])
+df2 = pd.read_excel("Bulk_Billing_Rate_Outer_Regional.xlsx", sheet_name = excel2.sheet_names[0])
+df3 = pd.read_excel("Bulk_Billing_Rate_Remote.xlsx", sheet_name = excel3.sheet_names[0])
+df4 = pd.read_excel("Bulk_Billing_Rate_Very_Remote.xlsx", sheet_name = excel4.sheet_names[0])
+
+print(df1.shape)
+print(df2.shape)
+print(df3.shape)
+print(df4.shape)
+
+
+# Bulk Billing by year VIC.xlsx
+# change the column name
+# df=df.rename(columns = {'two':'new_name'})
+df1 = df1.rename(columns = {df1.columns[0] : "Type"})
+# set index
+df1_set = df1.set_index("Type")
+df1_set.head(9)
+df1_set.columns
+df1_set["2018-19"]
+df1_set.loc[["Broad Type of Service: Assistance at Operations"]]
+vic_assistance_ope = df1_set.loc[["Broad Type of Service: Assistance at Operations"]]
+vic_assistance_ope
+
+### Start ============ Calculate the Median of them ====================================== ###
+
+vic_median = df1_set.median(axis = 1)
+vic_median
+
+vic_median_df = vic_median.to_frame()
+type(vic_median_df)
+vic_median_df.columns = ["Median"]
+vic_median_df
+
+vic_median_df.rename(index={"Broad Type of Service: Anaesthetics" : "Anaesthetics"}, inplace = True)
+vic_median_df.rename(index={"Broad Type of Service: Assistance at Operations":"Assistance at Operations"}, inplace = True)
+vic_median_df.rename(index={"Broad Type of Service: Radiotherapy and Therapeutic Nuclear Medicine":"Radiotherapy and Therapeutic"}, inplace = True)
+
+vic_median_df.to_csv("vic_median.csv")
+### End ============ Calculate the Median of them ====================================== ###
+vic_assistance_ope.to_csv("Broad Type of Service: Assistance at Operations in VIC.csv")
+axes = df1_set.plot.bar(rot=0, subplots=True, figsize=(15,100))
+axes[1].legend(loc=2)
+
+df1_head = df1.head(1)
+df1_head
+data = [i for i in df1_head.iloc[0]]
+col = [i for i in df1_head.columns]
+data.reverse()
+col.reverse()
+new_df1_head = pd.DataFrame({"Year" : col[:-1],
+                            "data" : data[:-1]})
+new_df1_head.head()
+new_df1_head = new_df1_head.set_index("Year")
+new_df1_head.head()
+new_df1_head.plot.bar(rot=90, figsize=(16,10), title="Bulk Billing Rate By Year,VIC")
+
+# Bulk_Billing_Rate_Outer_Regional.xlsx
+# change the column name
+# df=df.rename(columns = {'two':'new_name'})
+df2 = df2.rename(columns = {df2.columns[0] : "Type"})
+df2.head()
+df2_first_two = df2.head(2)
+df2_first_two
+data_in_out = [i for i in df2_first_two.loc[0]]
+data_out = [i for i in df2_first_two.loc[1]]
+year = [i for i in df2_first_two.columns]
+
+data_in_out.reverse()
+data_out.reverse()
+year.reverse()
+
+df2_total_med = pd.DataFrame({"Year" : year[:-1],
+                             "In and Out of Hospital": data_in_out[:-1],
+                             "Out of Hospital" : data_out[:-1]})
+df2_total_med = df2_total_med.set_index("Year")
+df2_total_med.head()
+df2_total_med.plot.bar(rot = 90, figsize = (25,15), title = "Bulk Billing Rate Outer Regional")
+
+# Bulk_Billing_Rate_Remote.xlsx
+# change the column name
+# df=df.rename(columns = {'two':'new_name'})
+df3 = df3.rename(columns = {df3.columns[0] : 'Type'})
+df3
+
+data_in_out = [i for i in df3.loc[0]]
+data_out = [i for i in df3.loc[1]]
+year = [i for i in df3.columns]
+
+data_in_out.reverse()
+data_out.reverse()
+year.reverse()
+
+df3_total_med = pd.DataFrame({"Year" : year[:-1],
+                             "In and Out of Hospital" : data_in_out[:-1],
+                             "Out of Hospital" : data_out[:-1]})
+
+df3_total_med = df3_total_med.set_index("Year")
+df3_total_med
+
+df3_total_med.plot.bar(rot = 90, figsize = (25,15), title = "Bulk Billing Rate Remote")
+
+# Bulk_Billing_Rate_Very_Remote.xlsx
+# change the column name
+# df=df.rename(columns = {'two':'new_name'})
+df4 = df4.rename(columns = {df4.columns[0] : "Type"})
+df4.head()
+
+data_in_out = [i for i in df4.loc[0]]
+data_out = [i for i in df4.loc[1]]
+year = [i for i in df4.columns]
+
+year.reverse()
+data_in_out.reverse()
+data_out.reverse()
+
+df4_total_med = pd.DataFrame({"Year" : year[:-1],
+                             "In and Out of Hospital" : data_in_out[:-1],
+                             "Out of Hospital" : data_out[:-1]})
+
+df4_total_med = df4_total_med.set_index("Year")
+df4_total_med
+
+df4_total_med.plot.bar(rot = 90, figsize = (25,15), title = "Bulk Billing Rate Very Remote" )
+
+# Compare
+print("Bulk Billing Rate in VIC max is " , max(new_df1_head['data']))
+print("Bulk Billing Rate in VIC min is " , min(new_df1_head['data']))
+# Bulk_Billing_Rate_Outer_Regional
+print(max(df2_total_med['In and Out of Hospital']))
+print(min(df2_total_med['In and Out of Hospital']))
+print(max(df2_total_med['Out of Hospital']))
+print(min(df2_total_med['Out of Hospital']))
